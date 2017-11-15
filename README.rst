@@ -7,6 +7,14 @@ an upstream proxy.
 HTTPS connections are not decrypted (no MITM), instead they are forwarded
 according to Server name (SNI) from Client hello packet.
 
+*Note:* ItcProxy does not handle redirecting TCP connections by itself,
+you can use features of your network hardware or OS, like *iptables* on
+Linux (example provided below)
+
+*Limitation:* As TLS Client Hello message contains only target server name
+and not port number, all connections are assumed to go to standard HTTPS
+port 443.
+
 
 Locations
 ---------
@@ -53,6 +61,20 @@ Usage
     -t TLSPORT, --tlsport TLSPORT
                           Listening TLS port (default: disable)
     -V, --version         show program's version number and exit
+
+
+Example
+-------
+
+To intercept HTTPS connections, first use e.g. *iptables* on Linux to redirect
+outgoing TCP connections to port 443::
+  
+  iptables -t nat -A OUTPUT -p tcp --dport 443 -j REDIRECT --to-port 8443
+
+And then start ItcProxy, listening for HTTPS connections on port 8443 and
+forwarding to your upstream proxy (172.16.1.1:3128 in this example)::
+  
+  itcproxy.py -t 8443 172.16.1.1 3128
 
 
 License
